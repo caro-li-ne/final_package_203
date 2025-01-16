@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "final_package_203"
+version = "0.0.0"
+description = "A package for backtesting optimized basket."
+authors = ["Caroline"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.poetry.group.dev.dependencies]
+python-semantic-release = "^9.16.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.semantic_release]
+version_variable = "pyproject.toml:version"
+version_toml= ["pyproject.toml:tool.poetry.version"]
