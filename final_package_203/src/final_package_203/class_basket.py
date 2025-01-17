@@ -10,6 +10,8 @@ from pybacktestchain.data_module import get_stocks_data, UNIVERSE_SEC, get_stock
 
 @dataclass
 class StockDataFetcher:
+    '''This Class using function get_stocks_data from pybacktestchain.data_module to generate dataframe with closing prcies of N tickers randomly chosen.'''
+
     def __init__(self, N, start_date, end_date, tickers=None):
         self.tickers = tickers
         self.N = N
@@ -49,7 +51,7 @@ class ObjectiveFunction:
 
     @staticmethod
     def fun_opt(W, R):
-        return -np.dot(W, R)  # Maximizing dot product (minimizing negative)
+        return -np.dot(W, R)  # Maximizing dot product, i.e. maximising return (minimizing negative)
 
 class ConstraintsHandler:
     """Handles portfolio constraints."""
@@ -80,9 +82,9 @@ class PortfolioOptimizer:
 
     def __init__(self, N, min_w=0.0, max_w=0.35):
         self.N = N
-        self.min_w = min_w
-        self.max_w = max_w
-        self.x0 = np.array([1 / N for _ in range(N)])  # Initial weights
+        self.min_w = min_w # Minimum weight of each asset, set by default to 0
+        self.max_w = max_w # Maximum weight of each asset, set by default to 0.35
+        self.x0 = np.array([1 / N for _ in range(N)])  # Initial weights, (equally weighted)
 
     def optimize_weights(self, t, return_mat, constraints):
         """Runs optimization for time step t."""
@@ -116,6 +118,7 @@ class StockPortfolio:
         self.t_rebal = np.zeros((self.data.shape[0]))
 
     def IL(self,t):
+        ''' Function that computes level of index (optimized portfolio with vol target) at date t. '''
         rate = get_stock_data("SOFR", '2023-11-15', "2025-01-16")
         rate.index = pd.to_datetime(rate.Date)
         rate = rate[["Close"]].reindex(self.data.index.to_list()).ffill()
@@ -123,13 +126,16 @@ class StockPortfolio:
                     self.Basket_vect[t] / self.Basket_vect[t - 1] - 1 - rate.iloc[t - 1]["Close"] / 10000 * self.DCF[t]))
 
     def BL(self,t):
+        ''' Function that computes level of sub optimized basket at date t. '''
         return self.Basket_vect[t - 1] * np.sum(
             [self.Weights[i, t] * (self.data.iloc[t, i] / self.data.shift(1).iloc[t, i]) for i in range(self.N)])
 
     def HV(self,t):
+        ''' Function that computes Historic Volatility (annualized over 20 days) at date t. '''
         return np.sqrt(252 * np.mean([np.log(self.Basket_vect[h] / self.Basket_vect[h - 1]) ** 2 for h in range(t - 20, t)]))
 
     def expo(self,t):
+        ''' Function that computes Exposures to underlying Optimized BAsket of Index at date t.'''
         return min(self.VT / self.HV(t - 2), 1.2)
 
     def run_optimization(self):
@@ -155,6 +161,7 @@ class StockPortfolio:
         return results.iloc[self.t_start+21:,],self.ticker
 
 class Equally_weighted:
+    ''' Class that defines Equally Weighted Basket (N underlyings randomly chosen in UNIVERSE_SEC). '''
     def __init__(self, N, start_date, end_date, tickers=None):
         self.tickers=tickers
         if tickers is None:
