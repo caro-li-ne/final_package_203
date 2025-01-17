@@ -7,6 +7,7 @@ class Stats:
 
     def annualized_return(self):
         total_return = self.df['Index Level'].iloc[-1] / self.df['Index Level'].iloc[0] - 1
+        self.df.index=pd.to_datetime(self.df.index)
         num_years = (self.df.index[-1] - self.df.index[0]).days / 252
         return (1 + total_return) ** (1 / num_years) - 1
 

@@ -10,7 +10,8 @@ from pybacktestchain.data_module import get_stocks_data, UNIVERSE_SEC, get_stock
 
 @dataclass
 class StockDataFetcher:
-    def __init__(self, N, start_date, end_date):
+    def __init__(self, N, start_date, end_date, tickers=None):
+        self.tickers = tickers
         self.N = N
         self.start_date = start_date
         self.end_date = end_date
@@ -36,11 +37,11 @@ class StockDataFetcher:
         return list(valid_tickers)
 
     def get_data(self):
-        tickers = self.get_N_valid_tickers()
-        data = get_stocks_data(tickers, self.start_date, self.end_date).groupby(['Date', 'ticker'])['Close'].sum().unstack(
+        self.tickers = self.get_N_valid_tickers()
+        data = get_stocks_data(self.tickers, self.start_date, self.end_date).groupby(['Date', 'ticker'])['Close'].sum().unstack(
             'ticker').dropna(axis=0).ffill()
         data.index = pd.to_datetime(data.index)
-        return data
+        return data,self.tickers
 
 
 class ObjectiveFunction:
@@ -96,7 +97,7 @@ class StockPortfolio:
 
         self.constraints_handler = ConstraintsHandler(a, b, N, VT)
         self.optimizer = PortfolioOptimizer(N, min_w, max_w)
-        self.data = StockDataFetcher(N, start_date, end_date).get_data()
+        self.data, self.ticker = StockDataFetcher(N, start_date, end_date).get_data()
 
         self.N=N
         self.VT=VT
@@ -149,7 +150,7 @@ class StockPortfolio:
             self.Exp_vect[t] = self.expo(t)
             self.IL_vect[t] = self.IL(t)
         results = pd.DataFrame(self.IL_vect * 100 / self.IL_vect[self.t_start])
-        results.index=self.data.index
+        results.index=self.data.index.strftime('%Y-%m-%d')
         results.columns=["Index Level"]
         return results.iloc[self.t_start+21:,]
 
