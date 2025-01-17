@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-01-17)
+
+### Features
+
+- Added test for class Stats
+  ([`da3ec7a`](https://github.com/caro-li-ne/final_package_203/commit/da3ec7a82f9fb4274e2992474e126bc7af6ccbfb))
+
+
 ## v0.2.0 (2025-01-17)
 
 ### Features
