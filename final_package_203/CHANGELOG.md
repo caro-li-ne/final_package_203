@@ -19,7 +19,7 @@
 
 ## v0.2.0 (2025-01-17)
 
-### Features
+### Test
 
 - Added test file for basket class
   ([`612fe65`](https://github.com/caro-li-ne/final_package_203/commit/612fe658b3badb04ce364889363e9d395b3d7cf0))
