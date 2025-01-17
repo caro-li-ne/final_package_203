@@ -157,13 +157,19 @@ class StockPortfolio:
 class Equally_weighted:
     def __init__(self, N, start_date, end_date, tickers=None):
         self.tickers=tickers
-        self.data, self.tickers = StockDataFetcher(N, start_date, end_date).get_data()
+        if tickers is None:
+            self.data, self.tickers = StockDataFetcher(N, start_date, end_date).get_data()
+        else :
+            self.data= get_stocks_data(self.tickers, start_date, end_date)[["Close"]].ffill()
+            self.data.index = pd.to_datetime(self.data.index)
         self.N = N
 
     def compute_equally_weighted_basket(self):
-        equally_weighted_returns = self.data.pct_change().dropna().mean(axis=1)
-        equally_weighted_index = (1 + equally_weighted_returns).cumprod()
-        df_result = pd.DataFrame(index=self.data.index.strftime('%Y-%m-%d'), data={'Equally Weighted': equally_weighted_index})
+        equally_weighted_returns = self.data.pct_change().mean(axis=1)
+        equally_weighted_index = (1 + equally_weighted_returns)
+        equally_weighted_index.iloc[0]=100
+        equally_weighted_index=equally_weighted_index.cumprod()
+        df_result = pd.DataFrame(index=self.data.index, data={'Equally Weighted': equally_weighted_index})
         return df_result, self.tickers
 
 # Example Usage
