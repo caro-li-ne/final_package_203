@@ -155,7 +155,8 @@ class StockPortfolio:
         return results.iloc[self.t_start+21:,],self.ticker
 
 class Equally_weighted:
-    def __init__(self, N, start_date, end_date):
+    def __init__(self, N, start_date, end_date, tickers=None):
+        self.tickers=tickers
         self.data, self.tickers = StockDataFetcher(N, start_date, end_date).get_data()
         self.N = N
 
