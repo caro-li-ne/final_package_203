@@ -6,6 +6,5 @@ import os
 N = 3  # Number of assets
 start_date = '2023-11-15'
 end_date = '2025-01-16'
-equally_weighted = EquallyWeighted(N, start_date, end_date)
-df_equally_weighted = equally_weighted.compute_equally_weighted_basket()
+df_equally_weighted, tickers = Equally_weighted(N, start_date, end_date).compute_equally_weighted_basket()
 print("Equally Weighted Basket:\n", df_equally_weighted.head())
