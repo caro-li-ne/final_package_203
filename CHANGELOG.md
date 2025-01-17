@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.5.1 (2025-01-17)
+
+### Bug Fixes
+
+- Fixed bugs in test_equally_weighted_basket.py
+  ([`683b5af`](https://github.com/caro-li-ne/final_package_203/commit/683b5afa8972b45f8b37610cc578266926fe7649))
+
+
 ## v0.5.0 (2025-01-17)
 
 ### Features
