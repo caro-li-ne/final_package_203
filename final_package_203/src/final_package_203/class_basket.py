@@ -148,8 +148,10 @@ class StockPortfolio:
         for t in range(self.t_start + 22, return_mat.shape[0]):
             self.Exp_vect[t] = self.expo(t)
             self.IL_vect[t] = self.IL(t)
-        results = self.IL_vect * 100 / self.IL_vect[self.t_start]
-        return results
+        results = pd.DataFrame(self.IL_vect * 100 / self.IL_vect[self.t_start])
+        results.index=self.data.index
+        results.columns=["Index Level"]
+        return results.iloc[self.t_start+21:,]
 
 
 
