@@ -1,5 +1,6 @@
 from final_package_203.class_basket import StockPortfolio, StockDataFetcher
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import os
 
 name_bt="Backtest"
@@ -26,6 +27,12 @@ BT.to_csv(output_path, index=True)
 # Plot the DataFrame
 plt.figure(figsize=(10, 5))
 plt.plot(BT.index, BT["Index Level"], label="Index Level", color="blue")
+
+# Improve x-axis date formatting
+plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=21))  # Show every 21th day
+plt.xticks(rotation=45)  # Rotate labels for better readability
+
+# Labels and title
 plt.xlabel("Date")
 plt.ylabel("Index Level")
 plt.title("Index Level Over Time")
