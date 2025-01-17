@@ -10,18 +10,19 @@ from pybacktestchain.data_module import get_stocks_data, UNIVERSE_SEC, get_stock
 
 @dataclass
 class StockDataFetcher:
-    def __init__(self, start_date, end_date):
+    def __init__(self, N, start_date, end_date):
+        self.N = N
         self.start_date = start_date
         self.end_date = end_date
 
-    def generate_random_ticker(self, n):
+    def generate_random_ticker(self,n):
         return [random.choice(UNIVERSE_SEC) for _ in range(n)]
 
-    def get_N_valid_tickers(self, N):
+    def get_N_valid_tickers(self):
         valid_tickers = set()
-        while len(valid_tickers) < N:
+        while len(valid_tickers) < self.N:
             # Generate new random tickers
-            new_tickers = self.generate_random_ticker(N - len(valid_tickers))
+            new_tickers = self.generate_random_ticker(self.N - len(valid_tickers))
             # Try to fetch valid tickers
             try:
                 df = get_stocks_data(new_tickers, self.start_date, self.end_date)
@@ -35,8 +36,8 @@ class StockDataFetcher:
         return list(valid_tickers)
 
     def get_data(self):
-        tickers = self.get_N_valid_tickers(N)
-        data = get_stocks_data(tickers, start_date, end_date).groupby(['Date', 'ticker'])['Close'].sum().unstack(
+        tickers = self.get_N_valid_tickers()
+        data = get_stocks_data(tickers, self.start_date, self.end_date).groupby(['Date', 'ticker'])['Close'].sum().unstack(
             'ticker').dropna(axis=0).ffill()
         data.index = pd.to_datetime(data.index)
         return data
@@ -95,8 +96,10 @@ class StockPortfolio:
 
         self.constraints_handler = ConstraintsHandler(a, b, N, VT)
         self.optimizer = PortfolioOptimizer(N, min_w, max_w)
-        self.data = StockDataFetcher(start_date, end_date).get_data()
+        self.data = StockDataFetcher(N, start_date, end_date).get_data()
 
+        self.N=N
+        self.VT=VT
         self.DCF = pd.Series(((pd.DataFrame(self.data.index) - pd.DataFrame(self.data.index).shift(1)).iloc[:, 0].dt.days).values)
 
         self.COV_mat = COV_mat
@@ -111,7 +114,6 @@ class StockPortfolio:
         self.HV_vect = np.zeros((self.data.shape[0]))
         self.t_rebal = np.zeros((self.data.shape[0]))
 
-
     def IL(self,t):
         rate = get_stock_data("SOFR", '2023-11-15', "2025-01-16")
         rate.index = pd.to_datetime(rate.Date)
@@ -121,13 +123,13 @@ class StockPortfolio:
 
     def BL(self,t):
         return self.Basket_vect[t - 1] * np.sum(
-            [self.Weights[i, t] * (self.data.iloc[t, i] / self.data.shift(1).iloc[t, i]) for i in range(N)])
+            [self.Weights[i, t] * (self.data.iloc[t, i] / self.data.shift(1).iloc[t, i]) for i in range(self.N)])
 
     def HV(self,t):
         return np.sqrt(252 * np.mean([np.log(self.Basket_vect[h] / self.Basket_vect[h - 1]) ** 2 for h in range(t - 20, t)]))
 
     def expo(self,t):
-        return min(VT / self.HV(t - 2), 1.2)
+        return min(self.VT / self.HV(t - 2), 1.2)
 
     def run_optimization(self):
         """Optimizes weights for all time steps."""
@@ -136,7 +138,6 @@ class StockPortfolio:
         for t in range(self.t_start,return_mat.shape[0]):
             constraints = self.constraints_handler.get_constraints()#self.COV_mat[:, :, t])
             self.Weights[:, t] = self.optimizer.optimize_weights(t,return_mat, constraints)
-            print(self.Weights[:, t].sum())
 
         for t in range(self.t_start, return_mat.shape[0]):
             self.Basket_vect[t] = self.BL(t)
