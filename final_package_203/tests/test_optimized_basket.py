@@ -4,15 +4,14 @@ import matplotlib.dates as mdates
 import os
 
 name_bt="Backtest"
-N = 6  # Number of assets
+N = 3  # Number of assets
 VT = 0.2  # Volatility target (example)
 start_date = '2023-11-15'
 end_date = '2025-01-16'
 
 # COV_mat = np.zeros((N, N, data.shape[0]), dtype=float)  # covariance matrix
-data,tickers=StockDataFetcher(N,start_date,end_date).get_data()
 portfolio = StockPortfolio(N, start_date, end_date, VT)
-BT = portfolio.run_optimization()
+BT, tickers = portfolio.run_optimization()
 
 # Define the path to save the CSV
 output_dir = os.path.join(os.path.dirname(__file__), "../backtests")  # Navigate to backtests/

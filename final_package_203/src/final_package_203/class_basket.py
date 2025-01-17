@@ -41,7 +41,7 @@ class StockDataFetcher:
         data = get_stocks_data(self.tickers, self.start_date, self.end_date).groupby(['Date', 'ticker'])['Close'].sum().unstack(
             'ticker').dropna(axis=0).ffill()
         data.index = pd.to_datetime(data.index)
-        return data,self.tickers
+        return data, self.tickers
 
 
 class ObjectiveFunction:
@@ -152,9 +152,18 @@ class StockPortfolio:
         results = pd.DataFrame(self.IL_vect * 100 / self.IL_vect[self.t_start])
         results.index=self.data.index.strftime('%Y-%m-%d')
         results.columns=["Index Level"]
-        return results.iloc[self.t_start+21:,]
+        return results.iloc[self.t_start+21:,],self.ticker
 
+class Equally_weighted:
+    def __init__(self, N, start_date, end_date):
+        self.data, self.tickers = StockDataFetcher(N, start_date, end_date).get_data()
+        self.N = N
 
+    def compute_equally_weighted_basket(self):
+        equally_weighted_returns = self.data.pct_change().dropna().mean(axis=1)
+        equally_weighted_index = (1 + equally_weighted_returns).cumprod()
+        df_result = pd.DataFrame(index=self.data.index, data={'Equally Weighted': equally_weighted_index})
+        return df_result, self.tickers
 
 # Example Usage
 if __name__ == "__main__":
@@ -165,7 +174,7 @@ if __name__ == "__main__":
 
    # COV_mat = np.zeros((N, N, data.shape[0]), dtype=float)  # covariance matrix
     portfolio = StockPortfolio(N, start_date, end_date, VT)
-    BT = portfolio.run_optimization()
+    BT, ticker= portfolio.run_optimization()
 
     print(BT)
 
