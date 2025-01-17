@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "final_package_203"
-version = "0.1.0"
+version = "0.4.0"
 description = "A package for backtesting optimized basket."
 authors = ["Caroline"]
 license = "MIT"
