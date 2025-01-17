@@ -163,7 +163,7 @@ class Equally_weighted:
     def compute_equally_weighted_basket(self):
         equally_weighted_returns = self.data.pct_change().dropna().mean(axis=1)
         equally_weighted_index = (1 + equally_weighted_returns).cumprod()
-        df_result = pd.DataFrame(index=self.data.index, data={'Equally Weighted': equally_weighted_index})
+        df_result = pd.DataFrame(index=self.data.index.strftime('%Y-%m-%d'), data={'Equally Weighted': equally_weighted_index})
         return df_result, self.tickers
 
 # Example Usage
